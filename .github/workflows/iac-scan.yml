@@ -1,0 +1,41 @@
+name: IaC security scan
+
+on:
+  pull_request:
+    paths:
+      - "terraform/**"
+      - ".github/workflows/iac-scan.yml"
+
+jobs:
+  checkov-baseline:
+    name: Checkov - secure baseline (must pass)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Scan terraform/baseline
+        uses: bridgecrewio/checkov-action@v12
+        with:
+          directory: terraform/baseline
+          quiet: true
+          soft_fail: false
+          # Accepted risks for this free-tier lab baseline - see the
+          # "Accepted risks" table in docs/control-mapping.md for the
+          # rationale behind each one. Re-check this list if the baseline
+          # changes.
+          skip_check: >-
+            CKV_AWS_145,CKV_AWS_35,CKV_AWS_18,CKV_AWS_144,
+            CKV2_AWS_62,CKV2_AWS_11,CKV2_AWS_10,CKV_AWS_252
+
+  checkov-insecure-example:
+    name: Checkov - insecure example (report only, never fails)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Scan terraform/insecure-example
+        uses: bridgecrewio/checkov-action@v12
+        with:
+          directory: terraform/insecure-example
+          quiet: true
+          soft_fail: true
