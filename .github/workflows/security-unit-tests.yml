@@ -2,7 +2,7 @@ name: Security Test Suites
 
 on:
   push:
-    branches: [main, feature/multi-project-portfolio]
+    branches: [main]
   pull_request:
     paths:
       - "projects/02-serverless-auto-remediation/**"

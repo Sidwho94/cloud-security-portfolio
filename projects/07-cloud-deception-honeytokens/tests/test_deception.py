@@ -15,9 +15,16 @@ class TestHoneytokenAlert(unittest.TestCase):
         meta = honeytoken_alert.enrich_ip_metadata("10.0.1.50")
         self.assertEqual(meta["location"], "Internal")
 
+    @patch("honeytoken_alert.enrich_ip_metadata")
     @patch("honeytoken_alert.dispatch_deception_alert")
-    def test_lambda_handler_s3_trigger(self, mock_dispatch):
+    def test_lambda_handler_s3_trigger(self, mock_dispatch, mock_enrich):
         mock_dispatch.return_value = True
+        mock_enrich.return_value = {
+            "ip": "198.51.100.23",
+            "city": "Dublin",
+            "country": "Ireland",
+            "org": "Amazon.com",
+        }
 
         event = {
             "detail": {
@@ -39,9 +46,12 @@ class TestHoneytokenAlert(unittest.TestCase):
         response = honeytoken_alert.lambda_handler(event, None)
         self.assertEqual(response["statusCode"], 200)
         mock_dispatch.assert_called_once()
-        args, kwargs = mock_dispatch.call_args
-        self.assertIn("Decoy Honeytoken", args[0])
-        self.assertEqual(args[1]["adversary_ip"], "198.51.100.23")
+        call_args, call_kwargs = mock_dispatch.call_args
+        title = call_kwargs.get("title") or (call_args[0] if call_args else "")
+        details = call_kwargs.get("details") or (call_args[1] if len(call_args) > 1 else {})
+
+        self.assertIn("Decoy Honeytoken", title)
+        self.assertEqual(details.get("adversary_ip"), "198.51.100.23")
 
 
 if __name__ == "__main__":
