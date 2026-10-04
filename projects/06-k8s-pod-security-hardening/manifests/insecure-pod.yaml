@@ -1,0 +1,18 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: insecure-demo-pod
+  labels:
+    app: insecure-demo
+spec:
+  # Violations: host namespaces
+  hostPID: true
+  containers:
+    - name: vulnerable-container
+      image: alpine:latest
+      command: ["sleep", "3600"]
+      # Violations: privileged, runs as root, writable rootfs, default capabilities
+      securityContext:
+        privileged: true
+        allowPrivilegeEscalation: true
+        readOnlyRootFilesystem: false

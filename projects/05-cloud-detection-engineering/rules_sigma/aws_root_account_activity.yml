@@ -1,0 +1,25 @@
+title: AWS Root Account Usage
+id: 8f93e2ba-1941-48e2-b1e0-c3619213bc9a
+status: production
+description: Detects any interactive console login or API invocation performed by the AWS account root user.
+references:
+    - https://attack.mitre.org/techniques/T1078/004/
+    - https://docs.aws.amazon.com/securityhub/latest/userguide/iam-controls.html#iam-1
+author: Cloud Security Team
+date: 2026/10/04
+tags:
+    - attack.initial_access
+    - attack.privilege_escalation
+    - attack.t1078.004
+logsource:
+    product: aws
+    service: cloudtrail
+detection:
+    selection:
+        userIdentity.type: 'Root'
+    filter_service:
+        eventType: 'AwsServiceEvent'
+    condition: selection and not filter_service
+falsepositives:
+    - Initial account creation and essential break-glass billing actions
+level: high

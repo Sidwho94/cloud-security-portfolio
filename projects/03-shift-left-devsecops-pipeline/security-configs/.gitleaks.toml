@@ -1,0 +1,18 @@
+# Gitleaks Configuration for Secret Detection
+
+title = "Custom Gitleaks Scan Config"
+
+[extend]
+useDefault = true
+
+[allowlist]
+description = "Global allowlists for harmless test fixtures"
+paths = [
+    '''(^|/)tests/.*''',
+    '''(^|/)events/.*''',
+    '''(^|/)\.terraform/.*'''
+]
+regexes = [
+    '''vpc-[0-9a-fA-F]{17}''',
+    '''AIDACKCEVSQ6C2EXAMPLE'''
+]

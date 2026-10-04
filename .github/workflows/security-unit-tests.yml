@@ -1,0 +1,40 @@
+name: Security Test Suites
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    paths:
+      - "projects/02-serverless-auto-remediation/**"
+      - "projects/04-iam-least-privilege-analyzer/**"
+      - "projects/07-cloud-deception-honeytokens/**"
+
+jobs:
+  python-security-tests:
+    name: Run Python Security Unit Tests
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install Dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install boto3 tabulate
+
+      - name: Run Project 02 Serverless Auto-Remediation Tests
+        run: |
+          python -m unittest discover -s projects/02-serverless-auto-remediation/tests
+
+      - name: Run Project 04 IAM Analyzer Tests
+        run: |
+          python -m unittest discover -s projects/04-iam-least-privilege-analyzer/tests
+
+      - name: Run Project 07 Cloud Deception & Honeytoken Tests
+        run: |
+          python -m unittest discover -s projects/07-cloud-deception-honeytokens/tests

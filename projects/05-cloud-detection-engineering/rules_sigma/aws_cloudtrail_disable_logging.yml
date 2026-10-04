@@ -1,0 +1,26 @@
+title: AWS CloudTrail Logging Tampering
+id: d76b3cb2-9382-4f32-841f-1172a27d2c38
+status: production
+description: Detects attempts to disable, delete, or alter CloudTrail configurations to evade detection.
+references:
+    - https://attack.mitre.org/techniques/T1562/001/
+author: Cloud Security Team
+date: 2026/10/04
+tags:
+    - attack.defense_evasion
+    - attack.t1562.001
+logsource:
+    product: aws
+    service: cloudtrail
+detection:
+    selection:
+        eventSource: 'cloudtrail.amazonaws.com'
+        eventName:
+            - 'StopLogging'
+            - 'DeleteTrail'
+            - 'UpdateTrail'
+            - 'PutEventSelectors'
+    condition: selection
+falsepositives:
+    - Legitimate administrative reconfiguration (verify change ticket)
+level: critical
