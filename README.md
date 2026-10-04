@@ -21,6 +21,7 @@ A curated collection of production-grade cloud security, DevSecOps, and detectio
 | **04** | [**AWS IAM Least-Privilege & Escalation Analyzer**](projects/04-iam-least-privilege-analyzer/) | Cloud Identity & Access Management | Python, Boto3, Graph Analysis | MITRE ATT&CK T1078, T1098 |
 | **05** | [**Cloud Threat Hunting & Detection Engineering**](projects/05-cloud-detection-engineering/) | Security Operations (SOC) & SIEM | Amazon Athena, AWS Glue, Sigma Rules | MITRE ATT&CK Cloud Matrix |
 | **06** | [**Kubernetes Security Hardening & Admission Control**](projects/06-k8s-pod-security-hardening/) | Container & Platform Security | Kind, Kyverno, Pod Security Standards | K8s Restricted PSS, CIS K8s |
+| **07** | [**Cloud Deception Technology & Honeytokens**](projects/07-cloud-deception-honeytokens/) | Deception Engineering & Active Defense | EventBridge, S3 Honey-bucket, IAM Canary, GeoIP | MITRE ATT&CK T1078, T1530 |
 
 ---
 
@@ -42,8 +43,9 @@ graph TB
         P4["Project 04: IAM Escalation Analyzer<br/>• 8+ Privilege Escalation Paths<br/>• Wildcard Permission Auditing"]
     end
 
-    subgraph "4. Detection & Automated Response"
+    subgraph "4. Detection, Threat Hunting & Deception"
         P5["Project 05: Cloud Threat Hunting<br/>• Athena SQL Telemetry Queries<br/>• Vendor-Agnostic Sigma Rules"]
+        P7["Project 07: Cloud Deception<br/>• S3 Bait Buckets & Canary Keys<br/>• Zero False-Positive Tripwires"]
         P2["Project 02: Serverless Auto-Remediation<br/>• EventBridge + Lambda<br/>• Automated Threat Neutralization"]
     end
 
@@ -51,6 +53,7 @@ graph TB
     P1_Scan --> P1_Infra
     P1_Infra --> P5
     P5 -.->|Flags Suspicious Patterns| P2
+    P7 -.->|Direct Tripwire Alert| P2
 ```
 
 ---
@@ -81,6 +84,10 @@ graph TB
 ### [Project 06: Kubernetes Security Hardening & Policy Enforcement](projects/06-k8s-pod-security-hardening/)
 * **Problem**: Container breakout attacks exploit containers running as root or with host namespaces.
 * **Solution**: A zero-cost local lab on Kind deploying Kyverno admission controllers. Enforces non-root execution, drops all Linux capabilities, and requires read-only root filesystems, validated against both vulnerable and compliant test pods.
+
+### [Project 07: Cloud Deception Technology & Honeytokens](projects/07-cloud-deception-honeytokens/)
+* **Problem**: Determining when an attacker has penetrated perimeter defenses during the stealthy reconnaissance phase.
+* **Solution**: Deploys attractive decoy honeytokens (fake database backup buckets and planted IAM access keys). Any access triggers near real-time EventBridge alerts enriched with attacker GeoIP, ASN, and user-agent metadata with **0% false positive rates**.
 
 ---
 

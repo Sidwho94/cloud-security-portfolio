@@ -2,11 +2,12 @@ name: Security Test Suites
 
 on:
   push:
-    branches: [main]
+    branches: [main, feature/multi-project-portfolio]
   pull_request:
     paths:
       - "projects/02-serverless-auto-remediation/**"
       - "projects/04-iam-least-privilege-analyzer/**"
+      - "projects/07-cloud-deception-honeytokens/**"
 
 jobs:
   python-security-tests:
@@ -33,3 +34,7 @@ jobs:
       - name: Run Project 04 IAM Analyzer Tests
         run: |
           python -m unittest discover -s projects/04-iam-least-privilege-analyzer/tests
+
+      - name: Run Project 07 Cloud Deception & Honeytoken Tests
+        run: |
+          python -m unittest discover -s projects/07-cloud-deception-honeytokens/tests
