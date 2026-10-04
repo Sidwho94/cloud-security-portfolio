@@ -1,0 +1,61 @@
+name: Shift-Left DevSecOps Pipeline
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    paths:
+      - "projects/03-shift-left-devsecops-pipeline/**"
+
+jobs:
+  security-gates:
+    name: Security Gates (SAST, Secrets, SCA, Container)
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Source Code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      # Gate 1: Secret Scanning
+      - name: Gate 1 - Gitleaks Secret Detection
+        uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        continue-on-error: false
+
+      # Gate 2: Static Application Security Testing (SAST)
+      - name: Gate 2 - Semgrep SAST Analysis
+        uses: returntocorp/semgrep-action@v1
+        with:
+          config: >-
+            p/security-audit
+            p/secrets
+            projects/03-shift-left-devsecops-pipeline/security-configs/semgrep-rules.yaml
+        continue-on-error: false
+
+      # Gate 3: Software Composition Analysis (SCA)
+      - name: Gate 3 - Trivy Dependency Scan (SCA)
+        uses: aquasecurity/trivy-action@master
+        with:
+          scan-type: "fs"
+          scan-ref: "projects/03-shift-left-devsecops-pipeline/sample-app"
+          severity: "CRITICAL,HIGH"
+          exit-code: "1"
+
+      # Gate 4: Build Hardened Container
+      - name: Gate 4 - Build Multi-Stage Docker Image
+        run: |
+          docker build \
+            -t sample-microservice:local \
+            projects/03-shift-left-devsecops-pipeline/sample-app
+
+      # Gate 5: Container Image Vulnerability Scan & SBOM
+      - name: Gate 5 - Trivy Container Vulnerability Scan
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: "sample-microservice:local"
+          format: "table"
+          exit-code: "0" # Audit mode for base OS packages
+          severity: "CRITICAL,HIGH"

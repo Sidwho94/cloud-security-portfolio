@@ -18,11 +18,8 @@ RISKY_PORTS = {22, 3389}
 
 
 def check_s3(s3):
-    # Uses the account/bucket public access block as the public-exposure
-    # proxy; it does not parse bucket policies or ACLs directly, so a bucket
-    # blocked here but with a separately-public policy would be missed.
     findings = []
-    for b in s3.list_buckets()["Buckets"]:
+    for b in s3.list_buckets().get("Buckets", []):
         name = b["Name"]
         try:
             cfg = s3.get_public_access_block(Bucket=name)["PublicAccessBlockConfiguration"]
@@ -40,9 +37,9 @@ def check_iam(iam):
     for page in iam.get_paginator("list_users").paginate():
         for user in page["Users"]:
             name = user["UserName"]
-            if not iam.list_mfa_devices(UserName=name)["MFADevices"]:
+            if not iam.list_mfa_devices(UserName=name).get("MFADevices", []):
                 findings.append(("IAM", name, "No MFA device"))
-            for key in iam.list_access_keys(UserName=name)["AccessKeyMetadata"]:
+            for key in iam.list_access_keys(UserName=name).get("AccessKeyMetadata", []):
                 age = (now - key["CreateDate"]).days
                 if key["Status"] == "Active" and age > KEY_MAX_AGE_DAYS:
                     findings.append(("IAM", name, f"Active access key is {age} days old"))
@@ -53,7 +50,7 @@ def check_security_groups(ec2):
     findings = []
     for page in ec2.get_paginator("describe_security_groups").paginate():
         for sg in page["SecurityGroups"]:
-            for rule in sg["IpPermissions"]:
+            for rule in sg.get("IpPermissions", []):
                 open_world = any(r.get("CidrIp") == "0.0.0.0/0" for r in rule.get("IpRanges", []))
                 lo, hi = rule.get("FromPort"), rule.get("ToPort")
                 if open_world and lo is not None and any(lo <= p <= hi for p in RISKY_PORTS):
@@ -69,11 +66,12 @@ def main():
         + check_security_groups(session.client("ec2"))
     )
     os.makedirs("reports", exist_ok=True)
-    with open("reports/audit_findings.csv", "w", newline="") as f:
+    report_file = os.path.join("reports", "audit_findings.csv")
+    with open(report_file, "w", newline="") as f:
         w = csv.writer(f)
         w.writerow(["service", "resource", "finding"])
         w.writerows(findings)
-    print(f"{len(findings)} finding(s) written to reports/audit_findings.csv")
+    print(f"[+] {len(findings)} finding(s) written to {report_file}")
 
 
 if __name__ == "__main__":

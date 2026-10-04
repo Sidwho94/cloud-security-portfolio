@@ -1,0 +1,38 @@
+{
+  "version": "0",
+  "id": "c626487e-9769-42b7-a3a8-6b801a21e641",
+  "detail-type": "AWS API Call via CloudTrail",
+  "source": "aws.s3",
+  "account": "123456789012",
+  "time": "2026-10-04T02:00:00Z",
+  "region": "eu-west-2",
+  "detail": {
+    "eventVersion": "1.08",
+    "userIdentity": {
+      "type": "IAMUser",
+      "principalId": "AIDACKCEVSQ6C2EXAMPLE",
+      "arn": "arn:aws:iam::123456789012:user/compromised-contractor",
+      "accountId": "123456789012",
+      "userName": "compromised-contractor"
+    },
+    "eventTime": "2026-10-04T02:00:00Z",
+    "eventSource": "s3.amazonaws.com",
+    "eventName": "PutBucketAcl",
+    "awsRegion": "eu-west-2",
+    "sourceIPAddress": "198.51.100.45",
+    "userAgent": "aws-cli/2.15.0",
+    "requestParameters": {
+      "bucketName": "target-customer-records-bucket",
+      "AccessControlPolicy": {
+        "Grants": [
+          {
+            "Grantee": {
+              "URI": "http://acs.amazonaws.com/groups/global/AllUsers"
+            },
+            "Permission": "READ"
+          }
+        ]
+      }
+    }
+  }
+}

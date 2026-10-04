@@ -1,0 +1,25 @@
+rules:
+  - id: ban-python-shell-true
+    patterns:
+      - pattern-either:
+          - pattern: subprocess.Popen(..., shell=True, ...)
+          - pattern: subprocess.run(..., shell=True, ...)
+          - pattern: subprocess.call(..., shell=True, ...)
+          - pattern: os.system(...)
+    message: "Potential Command Injection detected. Banned use of shell=True or os.system."
+    languages: [python]
+    severity: ERROR
+    metadata:
+      cwe: "CWE-78: Improper Neutralization of Special Elements used in an OS Command ('OS Command Injection')"
+      owasp: "A03:2021 - Injection"
+
+  - id: ban-hardcoded-aws-secrets
+    patterns:
+      - pattern-either:
+          - pattern: '$KEY = "AKIA$REMAINDER"'
+          - pattern: 'aws_secret_access_key = "..."'
+    message: "Possible hardcoded AWS credentials detected in source code."
+    languages: [python, yaml, json]
+    severity: ERROR
+    metadata:
+      cwe: "CWE-798: Use of Hard-coded Credentials"
